@@ -139,6 +139,12 @@ pesquisas já respondidas):
   (detrator, baixa retenção) são configuráveis em **Configurações**, gravados
   na tabela `settings` (chave `health_thresholds`), com fallback para os
   valores padrão do enunciado (Saudável ≥ 80, Atenção ≥ 60, Risco < 60).
+- **Alertas** (`src/lib/queries.ts#getDashboardData`): NPS detrator, MHS em
+  zona de risco, queda de NPS/MHS vs. mês anterior e baixa retenção usam os
+  limites acima. "Feedback crítico" (item do enunciado sem uma métrica
+  numérica associada) usa uma heurística simples de palavras-chave em
+  português sobre o texto aberto — não é análise de sentimento, é um sinal
+  aproximado para triagem manual.
 
 ## Scripts
 

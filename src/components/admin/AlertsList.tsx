@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { AlertTriangle, TrendingDown, MessageSquareWarning, ShieldAlert } from "lucide-react";
+import { AlertTriangle, TrendingDown, MessageSquareWarning, ShieldAlert, HeartPulse } from "lucide-react";
 import type { DashboardAlert } from "@/lib/queries";
 
 const ICONS: Record<DashboardAlert["type"], typeof AlertTriangle> = {
   detractor: ShieldAlert,
+  mhs_risk: HeartPulse,
   mhs_drop: TrendingDown,
   nps_drop: TrendingDown,
   critical_feedback: MessageSquareWarning,

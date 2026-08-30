@@ -97,8 +97,35 @@ async function getDimensionAverages(surveyId: string): Promise<DimensionAverage[
 export interface DashboardAlert {
   clientId: string;
   companyName: string;
-  type: "detractor" | "mhs_drop" | "nps_drop" | "critical_feedback" | "low_retention";
+  type: "detractor" | "mhs_risk" | "mhs_drop" | "nps_drop" | "critical_feedback" | "low_retention";
   message: string;
+}
+
+// Lightweight, transparent heuristic for "feedback crítico" (spec §20) — there's
+// no sentiment model in the loop, so this flags feedback containing negative
+// keywords rather than silently skipping this alert condition.
+const CRITICAL_FEEDBACK_KEYWORDS = [
+  "insatisfeit",
+  "péssim",
+  "pessim",
+  "ruim",
+  "problema",
+  "reclama",
+  "atras",
+  "demora",
+  "cancelar",
+  "cancelamento",
+  "não recomendo",
+  "não estou vendo",
+  "sem retorno",
+  "decepcion",
+  "frustra",
+];
+
+function isCriticalFeedback(feedback: string | null | undefined): boolean {
+  if (!feedback) return false;
+  const normalized = feedback.toLowerCase();
+  return CRITICAL_FEEDBACK_KEYWORDS.some((kw) => normalized.includes(kw));
 }
 
 export interface DashboardData {
@@ -180,7 +207,8 @@ export async function getDashboardData(
     };
   }
 
-  // Alerts: detractors, low retention, critical feedback, and drops vs previous month per client.
+  // Alerts: detractors, MHS in the risk band, low retention, critical
+  // feedback, and drops vs previous month per client (spec §20).
   const alerts: DashboardAlert[] = [];
   for (const r of responses) {
     const companyName = r.client?.company_name ?? "Cliente";
@@ -192,12 +220,28 @@ export async function getDashboardData(
         message: `Cliente detrator (NPS ${r.nps_score})`,
       });
     }
+    if (mhsPercentageToHealth(r.mhs_percentage ?? 0, thresholds) === "risk") {
+      alerts.push({
+        clientId: r.client_id,
+        companyName,
+        type: "mhs_risk",
+        message: `MHS em zona de risco (${Math.round(r.mhs_percentage ?? 0)}/100)`,
+      });
+    }
     if (isLowRetentionAlert(r.retention_answer, thresholds)) {
       alerts.push({
         clientId: r.client_id,
         companyName,
         type: "low_retention",
         message: "Baixa percepção de indispensabilidade",
+      });
+    }
+    if (isCriticalFeedback(r.feedback)) {
+      alerts.push({
+        clientId: r.client_id,
+        companyName,
+        type: "critical_feedback",
+        message: "Feedback crítico no comentário aberto",
       });
     }
   }
