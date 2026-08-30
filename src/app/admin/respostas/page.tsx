@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getAllResponses } from "@/lib/queries";
 import { monthLabel } from "@/lib/metrics";
 import { NpsBadge } from "@/components/admin/HealthBadge";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { deleteResponseAction } from "@/lib/actions/responses";
 import { formatDateTime } from "@/lib/utils";
 
 export default async function ResponsesPage() {
@@ -40,10 +42,18 @@ export default async function ResponsesPage() {
                   </td>
                   <td className="px-5 py-3.5">{r.mhs_percentage != null ? `${Math.round(r.mhs_percentage)}/100` : "—"}</td>
                   <td className="px-5 py-3.5 text-[var(--muted)]">{formatDateTime(r.submitted_at)}</td>
-                  <td className="px-5 py-3.5 text-right">
-                    <Link href={`/admin/respostas/${r.id}`} className="text-sm font-medium text-[var(--accent)] hover:underline">
-                      Ver
-                    </Link>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center justify-end gap-1">
+                      <Link href={`/admin/respostas/${r.id}`} className="px-2 text-sm font-medium text-[var(--accent)] hover:underline">
+                        Ver
+                      </Link>
+                      <DeleteButton
+                        iconOnly
+                        label="Excluir resposta"
+                        action={deleteResponseAction.bind(null, r.id)}
+                        confirmMessage={`Excluir a resposta de "${r.client.company_name}" (${monthLabel(r.survey.month, r.survey.year)})? O link de convite volta a ficar pendente. Não pode ser desfeito.`}
+                      />
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getSurveys } from "@/lib/queries";
 import { monthLabel } from "@/lib/metrics";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { deleteSurveyAction } from "@/lib/actions/surveys";
 import { cn } from "@/lib/utils";
 
 const STATUS_LABEL = { draft: "Rascunho", in_progress: "Em andamento", closed: "Encerrada" } as const;
@@ -31,18 +33,29 @@ export default async function SurveysPage() {
         {surveys.map((s) => {
           const rate = s.total > 0 ? Math.round((s.answered / s.total) * 100) : 0;
           return (
-            <Link key={s.id} href={`/admin/pesquisas/${s.id}`} className="card flex items-center justify-between p-5 transition-colors hover:bg-gray-50">
-              <div>
+            <div key={s.id} className="card relative flex items-center justify-between p-5 transition-colors hover:bg-gray-50">
+              <Link href={`/admin/pesquisas/${s.id}`} className="absolute inset-0" aria-label={monthLabel(s.month, s.year)} />
+              <div className="pointer-events-none">
                 <p className="font-medium text-[var(--foreground)]">{monthLabel(s.month, s.year)}</p>
                 <span className={cn("badge mt-1.5", STATUS_STYLE[s.status])}>{STATUS_LABEL[s.status]}</span>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-medium text-[var(--foreground)]">
-                  {s.answered} / {s.total} respostas
-                </p>
-                <p className="text-xs text-[var(--muted)]">{rate}%</p>
+              <div className="flex items-center gap-4">
+                <div className="pointer-events-none text-right">
+                  <p className="text-sm font-medium text-[var(--foreground)]">
+                    {s.answered} / {s.total} respostas
+                  </p>
+                  <p className="text-xs text-[var(--muted)]">{rate}%</p>
+                </div>
+                <div className="relative z-10">
+                  <DeleteButton
+                    iconOnly
+                    label="Excluir pesquisa"
+                    action={deleteSurveyAction.bind(null, s.id)}
+                    confirmMessage={`Excluir a pesquisa de ${monthLabel(s.month, s.year)}? Isso apaga todos os links e respostas dessa rodada. Não pode ser desfeito.`}
+                  />
+                </div>
               </div>
-            </Link>
+            </div>
           );
         })}
 

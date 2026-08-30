@@ -124,5 +124,20 @@ export async function POST(request: Request) {
     .update({ status: "answered", answered_at: new Date().toISOString() })
     .eq("id", invitation.id);
 
+  // Auto-close the survey once every invitation has been answered.
+  const { data: pendingInvitations } = await supabase
+    .from("survey_invitations")
+    .select("id")
+    .eq("survey_id", invitation.survey_id)
+    .eq("status", "pending");
+
+  if (pendingInvitations && pendingInvitations.length === 0) {
+    await supabase
+      .from("surveys")
+      .update({ status: "closed", closed_at: new Date().toISOString() })
+      .eq("id", invitation.survey_id)
+      .eq("status", "in_progress");
+  }
+
   return NextResponse.json({ ok: true });
 }

@@ -71,3 +71,12 @@ export async function updateClientAction(
   revalidatePath(`/admin/clientes/${clientId}`);
   redirect(`/admin/clientes/${clientId}`);
 }
+
+export async function deleteClientAction(clientId: string) {
+  const supabase = await createClient();
+  // Cascades survey_invitations, responses, and response_answers for this client (see migration).
+  await supabase.from("clients").delete().eq("id", clientId);
+  revalidatePath("/admin/clientes");
+  revalidatePath("/admin");
+  redirect("/admin/clientes");
+}

@@ -3,6 +3,8 @@ import { Plus, Search } from "lucide-react";
 import { getClientsWithLatestMetrics } from "@/lib/queries";
 import { getHealthThresholds } from "@/lib/settings";
 import { HealthBadge } from "@/components/admin/HealthBadge";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { deleteClientAction } from "@/lib/actions/clients";
 import { formatDate, cn } from "@/lib/utils";
 
 const FILTERS = [
@@ -100,10 +102,18 @@ export default async function ClientsPage({
                   <td className="px-5 py-3.5">
                     <HealthBadge status={c.latestHealth} />
                   </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <Link href={`/admin/clientes/${c.id}`} className="text-sm font-medium text-[var(--accent)] hover:underline">
-                      Ver
-                    </Link>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center justify-end gap-1">
+                      <Link href={`/admin/clientes/${c.id}`} className="px-2 text-sm font-medium text-[var(--accent)] hover:underline">
+                        Ver
+                      </Link>
+                      <DeleteButton
+                        iconOnly
+                        label="Excluir cliente"
+                        action={deleteClientAction.bind(null, c.id)}
+                        confirmMessage={`Excluir "${c.company_name}"? Isso apaga também todas as respostas e convites de pesquisa desse cliente. Não pode ser desfeito.`}
+                      />
+                    </div>
                   </td>
                 </tr>
               ))}

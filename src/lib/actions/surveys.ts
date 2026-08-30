@@ -80,3 +80,23 @@ export async function createSurveyAction(_prev: SurveyFormState, formData: FormD
   revalidatePath("/admin/pesquisas");
   redirect(`/admin/pesquisas/${survey.id}`);
 }
+
+export async function deleteSurveyAction(surveyId: string) {
+  const supabase = await createClient();
+  await supabase.from("surveys").delete().eq("id", surveyId);
+  revalidatePath("/admin/pesquisas");
+  revalidatePath("/admin");
+  redirect("/admin/pesquisas");
+}
+
+export async function toggleSurveyStatusAction(surveyId: string, currentStatus: "in_progress" | "closed") {
+  const supabase = await createClient();
+  const nextStatus = currentStatus === "closed" ? "in_progress" : "closed";
+  await supabase
+    .from("surveys")
+    .update({ status: nextStatus, closed_at: nextStatus === "closed" ? new Date().toISOString() : null })
+    .eq("id", surveyId);
+  revalidatePath(`/admin/pesquisas/${surveyId}`);
+  revalidatePath("/admin/pesquisas");
+  revalidatePath("/admin");
+}

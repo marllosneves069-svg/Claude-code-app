@@ -7,6 +7,8 @@ import { getHealthThresholds } from "@/lib/settings";
 import { isDetractorAlert, isLowRetentionAlert, monthLabel } from "@/lib/metrics";
 import { HealthBadge, NpsBadge } from "@/components/admin/HealthBadge";
 import { ClientHistoryChart } from "@/components/admin/charts/ClientHistoryChart";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { deleteClientAction } from "@/lib/actions/clients";
 import { formatDate, formatDateTime, cn } from "@/lib/utils";
 import { RETENTION_LABELS } from "@/lib/questions";
 
@@ -33,10 +35,18 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             {tenureMonths != null && ` · ${tenureMonths} meses como cliente`}
           </p>
         </div>
-        <Link href={`/admin/clientes/${client.id}/editar`} className="btn-secondary">
-          <Pencil className="h-4 w-4" />
-          Editar
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href={`/admin/clientes/${client.id}/editar`} className="btn-secondary">
+            <Pencil className="h-4 w-4" />
+            Editar
+          </Link>
+          <DeleteButton
+            label="Excluir cliente"
+            action={deleteClientAction.bind(null, client.id)}
+            confirmMessage={`Excluir "${client.company_name}"? Isso apaga também todas as respostas e convites de pesquisa desse cliente. Não pode ser desfeito.`}
+            className="border border-red-200"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

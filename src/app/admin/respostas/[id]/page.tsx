@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getResponseDetail } from "@/lib/queries";
 import { monthLabel } from "@/lib/metrics";
 import { NpsBadge } from "@/components/admin/HealthBadge";
+import { DeleteButton } from "@/components/admin/DeleteButton";
+import { deleteResponseAction } from "@/lib/actions/responses";
 import { formatDateTime } from "@/lib/utils";
 import { RETENTION_LABELS } from "@/lib/questions";
 
@@ -23,9 +25,17 @@ export default async function ResponseDetailPage({ params }: { params: Promise<{
             {response.client.contact_name} · {monthLabel(response.survey.month, response.survey.year)}
           </p>
         </div>
-        <Link href={`/admin/clientes/${response.client.id}`} className="text-sm font-medium text-[var(--accent)] hover:underline">
-          Ver cliente
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href={`/admin/clientes/${response.client.id}`} className="text-sm font-medium text-[var(--accent)] hover:underline">
+            Ver cliente
+          </Link>
+          <DeleteButton
+            label="Excluir resposta"
+            action={deleteResponseAction.bind(null, response.id)}
+            confirmMessage={`Excluir esta resposta de "${response.client.company_name}"? O link de convite volta a ficar pendente. Não pode ser desfeito.`}
+            className="border border-red-200"
+          />
+        </div>
       </div>
 
       <p className="text-xs text-[var(--muted)]">Respondido em {formatDateTime(response.submitted_at)}</p>
