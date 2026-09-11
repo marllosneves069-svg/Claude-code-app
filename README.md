@@ -165,3 +165,74 @@ pesquisas já respondidas):
 - Sem papéis/permissões diferenciados na área administrativa (qualquer
   usuário autenticado tem acesso total), como esperado para uma ferramenta
   interna de uso único pela equipe.
+
+---
+
+# Diagnóstico Empresarial 360
+
+Segunda aplicação hospedada neste mesmo repositório, completamente
+independente do Pulse (fluxo, banco de dados e propósito diferentes).
+Voltada a empresários dos segmentos de brindes personalizados, gráficas,
+comunicação visual e personalizados: o visitante responde a um diagnóstico
+estruturado sobre a empresa e recebe uma análise de maturidade baseada em
+dados, com arquitetura pronta para evoluir para interpretação por IA.
+
+Rotas:
+
+- `/diagnostico` — landing page (pública)
+- `/diagnostico/aplicacao` — wizard completo (perfil da empresa + 6 pilares)
+- `/diagnostico/resultado/[id]` — tela de resultado de um diagnóstico salvo
+
+## Banco de dados próprio
+
+Esta aplicação usa um **projeto Supabase separado** do usado pelo Pulse.
+Crie um segundo projeto em [supabase.com](https://supabase.com), rode
+`supabase/migrations/0001_diagnostico_360_init.sql` nele e preencha, em
+`.env.local`:
+
+```
+DIAGNOSTICO_SUPABASE_URL=...
+DIAGNOSTICO_SUPABASE_SERVICE_ROLE_KEY=...
+NEXT_PUBLIC_DIAGNOSTICO_CTA_URL=...   # WhatsApp ou página de agendamento
+```
+
+Assim como no Pulse, o `anon` role não tem nenhuma policy — o wizard público
+fala com o Postgres exclusivamente via `src/lib/supabase/diagnostico-admin.ts`
+(service role, server-only), usado apenas para inserir um diagnóstico e
+buscar um diagnóstico por id exato.
+
+## Jornada
+
+Landing → Perfil da empresa → Marketing → Comercial → Pessoas → Operação e
+Produção → Financeiro → Gestão → Processamento → Resultado → CTA de
+agendamento. Uma barra de progresso acompanha o preenchimento e é possível
+avançar/voltar sem perder respostas (o estado do wizard fica em
+`localStorage` até o envio final).
+
+## Pontuação (`src/lib/diagnostico/`)
+
+- 36 perguntas (6 por pilar), cada uma com 5 alternativas valendo
+  `0 / 2 / 5 / 8 / 10` pontos (nunca exibidos ao usuário).
+- `NOTA_PILAR = (soma das 6 respostas / 60) × 100`; `NOTA_GERAL` é a média
+  das seis notas de pilar. Classificação: **Crítico** (0–39), **Atenção**
+  (40–59), **Em desenvolvimento** (60–79), **Estruturado** (80–100).
+- Respostas 0 ou 2 viram **alerta crítico**; respostas 5 viram **ponto de
+  atenção** (`src/lib/diagnostico/pontuacao.ts`).
+- O gargalo principal/segundo/terceiro **não** é apenas a menor nota: um
+  motor de regras de cruzamento entre pilares (`src/lib/diagnostico/regras.ts`)
+  eleva a prioridade de um pilar quando padrões específicos aparecem (ex.:
+  Marketing alto + Comercial baixo → possível vazamento comercial). Novas
+  regras são só um item a mais nessa lista, sem mudança de schema.
+
+## Conteúdo ainda placeholder
+
+Por pedido explícito desta primeira fase, o enunciado e as alternativas das
+36 perguntas (`src/lib/diagnostico/perguntas.ts`) são gerados
+estruturalmente ("Pergunta MKT01 — conteúdo a ser definido", "Alternativa A"
+… "Alternativa E") — a escala de pontuação e o motor de regras já estão
+completos e funcionais, mas o conteúdo de negócio real de cada pergunta
+ainda precisa ser escrito. Para adicionar o conteúdo definitivo de uma
+pergunta, edite apenas `enunciado` e os `label` das opções do item
+correspondente nesse arquivo. Da mesma forma, a seção "O que os dados
+indicam" na tela de resultado está reservada para a futura interpretação
+por IA.
