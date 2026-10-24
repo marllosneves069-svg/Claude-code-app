@@ -146,6 +146,62 @@ pesquisas já respondidas):
   português sobre o texto aberto — não é análise de sentimento, é um sinal
   aproximado para triagem manual.
 
+## Dashboard de Performance (Meta Ads + Tiny)
+
+`/admin/performance` cruza o funil do **Meta Ads** com os pedidos do **Tiny
+(Olist)** de uma loja, no mesmo formato do relatório enviado ao cliente. O
+botão **Copiar relatório** gera o texto pronto para colar no WhatsApp.
+
+### Configuração
+
+1. Rode `supabase/migrations/0002_performance.sql` no SQL Editor do Supabase.
+2. Preencha no `.env.local` (e nas variáveis do deploy): `META_ACCESS_TOKEN`,
+   `META_AD_ACCOUNT_ID`, `TINY_API_TOKEN` e `CRON_SECRET` (veja `.env.example`).
+   - **Meta**: token de *usuário do sistema* do Business Manager com permissão
+     `ads_read` e acesso à conta de anúncios.
+   - **Tiny**: token da API v2 (Configurações → Outras configurações → Token API).
+3. Rode a primeira carga (90 dias por padrão) pela linha de comando, porque o
+   limite de requisições do Tiny deixa o backfill lento:
+
+   ```bash
+   npm run sync            # Meta + Tiny
+   npm run sync -- tiny    # só um dos dois
+   ```
+
+### Atualização dos dados
+
+- **Diária**: `vercel.json` agenda `GET /api/cron/sync` às 06h (horário de
+  Brasília). A Vercel envia `Authorization: Bearer $CRON_SECRET`
+  automaticamente; fora da Vercel, qualquer agendador que mande esse header
+  funciona.
+- **Manual**: botão **Atualizar agora** no dashboard.
+- O Meta é sempre re-sincronizado nos últimos 7 dias (a atribuição muda
+  depois). O Tiny é incremental (pedidos alterados desde o último sync). Se o
+  tempo da função acabar, o sync fica como "parcial" e o próximo continua de
+  onde parou. Todo sync fica registrado em `sync_runs`.
+- As tabelas novas são só leitura para usuários logados; quem grava é o sync,
+  com a service role key.
+
+### Definição de cada métrica
+
+| Métrica | Fonte / cálculo |
+| --- | --- |
+| Pessoas alcançadas | Alcance do Meta no período inteiro (alcance não pode ser somado dia a dia; se a API falhar, mostra "≈" com a soma diária) |
+| Impressões, cliques no link | Meta (`impressions`, `inline_link_clicks`) |
+| Entraram em contato/form nativo | Conversas por mensagem iniciadas + leads de formulário instantâneo |
+| Investimento | Gasto do Meta, **sem imposto** |
+| Imposto | Gasto × taxa (12,15% padrão, editável em Configurações). Só informativo |
+| Orçamentos em aberto / valor parado | Pedidos do Tiny do período com situação "Em aberto" (situação atual) |
+| Compraram / faturamento | Pedidos com situação Aprovado, Preparando envio, Faturado, Pronto para envio, Enviado ou Entregue (cancelados ficam de fora), pela data do pedido |
+| Custo por contato/orçamento/venda | Investimento ÷ quantidade |
+| Taxa de conversão | Compraram ÷ contatos |
+| ROAS | Faturamento do Tiny ÷ investimento |
+| Ticket médio | Faturamento ÷ compras |
+
+Os deltas comparam com o período anterior de mesmo tamanho. A tabela de
+campanhas mostra também o "ROAS Meta" (valor de compra atribuído pelo pixel),
+para comparar com o ROAS real do Tiny.
+
 ## Scripts
 
 | Comando            | Descrição                                   |
@@ -155,6 +211,7 @@ pesquisas já respondidas):
 | `npm run lint`      | ESLint                                       |
 | `npm run seed`      | Popula dados de demonstração                 |
 | `npm run seed:clear`| Remove os dados de demonstração              |
+| `npm run sync`      | Sincroniza Meta Ads + Tiny (backfill/manual) |
 
 ## Limitações conhecidas / próximos passos
 

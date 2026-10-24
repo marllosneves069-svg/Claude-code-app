@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx --env-file=.env.local scripts/seed-demo-data.ts",
-    "seed:clear": "tsx --env-file=.env.local scripts/clear-demo-data.ts"
+    "seed:clear": "tsx --env-file=.env.local scripts/clear-demo-data.ts",
+    "sync": "tsx --env-file=.env.local scripts/sync-performance.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",
