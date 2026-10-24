@@ -1,4 +1,4 @@
-// Hand-written types matching supabase/migrations/0001_init.sql.
+// Hand-written types matching supabase/migrations/0001_init.sql and 0002_performance.sql.
 // If you have the Supabase CLI, you can replace this with:
 //   supabase gen types typescript --linked > src/lib/database.types.ts
 
@@ -6,6 +6,9 @@ export type ClientStatus = "active" | "paused" | "ended";
 export type SurveyStatus = "draft" | "in_progress" | "closed";
 export type QuestionType = "nps" | "scale_5" | "scale_5_inverted" | "text";
 export type InvitationStatus = "pending" | "answered";
+export type TinySituacaoGroup = "open" | "purchase" | "excluded";
+export type SyncSource = "meta" | "tiny";
+export type SyncStatus = "running" | "success" | "partial" | "error";
 
 export interface ClientRow {
   id: string;
@@ -83,6 +86,69 @@ export interface SettingsRow {
   updated_at: string;
 }
 
+export interface MetaCampaignDailyRow {
+  date: string;
+  campaign_id: string;
+  campaign_name: string;
+  spend: number;
+  impressions: number;
+  reach: number;
+  link_clicks: number;
+  messaging_conversations: number;
+  leads: number;
+  meta_purchases: number;
+  meta_purchase_value: number;
+  synced_at: string;
+}
+
+export interface TinyOrderRow {
+  tiny_id: string;
+  numero: string | null;
+  numero_ecommerce: string | null;
+  data_pedido: string;
+  situacao: string;
+  situacao_group: TinySituacaoGroup;
+  valor: number;
+  cliente_nome: string | null;
+  vendedor_nome: string | null;
+  ecommerce: string | null;
+  items_synced_at: string | null;
+  synced_at: string;
+}
+
+export interface TinyOrderItemRow {
+  id: string;
+  order_id: string;
+  product_id: string | null;
+  sku: string | null;
+  descricao: string;
+  quantidade: number;
+  valor_unitario: number;
+}
+
+export interface TinyProductRow {
+  tiny_id: string;
+  sku: string | null;
+  nome: string;
+  preco: number | null;
+  preco_custo: number | null;
+  situacao: string | null;
+  estoque: number | null;
+  estoque_synced_at: string | null;
+  synced_at: string;
+}
+
+export interface SyncRunRow {
+  id: string;
+  source: SyncSource;
+  trigger: string;
+  status: SyncStatus;
+  started_at: string;
+  finished_at: string | null;
+  error: string | null;
+  stats: Record<string, unknown>;
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -105,6 +171,19 @@ export interface Database {
         Update: Partial<ResponseAnswerRow>;
       };
       settings: { Row: SettingsRow; Insert: Partial<SettingsRow>; Update: Partial<SettingsRow> };
+      meta_campaign_daily: {
+        Row: MetaCampaignDailyRow;
+        Insert: Partial<MetaCampaignDailyRow>;
+        Update: Partial<MetaCampaignDailyRow>;
+      };
+      tiny_orders: { Row: TinyOrderRow; Insert: Partial<TinyOrderRow>; Update: Partial<TinyOrderRow> };
+      tiny_order_items: {
+        Row: TinyOrderItemRow;
+        Insert: Partial<TinyOrderItemRow>;
+        Update: Partial<TinyOrderItemRow>;
+      };
+      tiny_products: { Row: TinyProductRow; Insert: Partial<TinyProductRow>; Update: Partial<TinyProductRow> };
+      sync_runs: { Row: SyncRunRow; Insert: Partial<SyncRunRow>; Update: Partial<SyncRunRow> };
     };
   };
 }

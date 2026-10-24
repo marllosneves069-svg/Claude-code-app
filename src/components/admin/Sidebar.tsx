@@ -10,11 +10,13 @@ import {
   BarChart3,
   Settings,
   Waves,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/performance", label: "Performance", icon: TrendingUp },
   { href: "/admin/clientes", label: "Clientes", icon: Users },
   { href: "/admin/pesquisas", label: "Pesquisas", icon: ClipboardList },
   { href: "/admin/respostas", label: "Respostas", icon: MessageSquareText },
