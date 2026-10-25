@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { eachDay, previousRange, type DateRange } from "@/lib/date-range";
 import { getMetaConfig, getPeriodReach } from "@/lib/integrations/meta";
-import { buildFunnel, sumTinyOrders, type Funnel, type MetaTotals } from "@/lib/performance-metrics";
+import { buildFunnel, isSale, sumTinyOrders, type Funnel, type MetaTotals } from "@/lib/performance-metrics";
 import type { MetaCampaignDailyRow, SyncRunRow, TinyOrderRow, TinySituacaoGroup } from "@/lib/database.types";
 
 /** Products at or below this many units show up in "Estoque baixo". */
@@ -160,7 +160,7 @@ function buildDaily(range: DateRange, meta: MetaRow[], orders: OrderRow[]): Dail
   }
   for (const o of orders) {
     const p = byDay.get(o.data_pedido);
-    if (!p || o.situacao_group !== "purchase") continue;
+    if (!p || !isSale(o.situacao_group)) continue;
     p.revenue += Number(o.valor);
     p.purchases += 1;
   }
@@ -231,7 +231,7 @@ export async function getTopProducts(range: DateRange, limit = 15): Promise<{ to
     supabase
       .from("tiny_order_items")
       .select("product_id, sku, descricao, quantidade, valor_unitario, order:tiny_orders!inner(data_pedido, situacao_group)")
-      .eq("order.situacao_group", "purchase")
+      .neq("order.situacao_group", "excluded")
       .gte("order.data_pedido", range.from)
       .lte("order.data_pedido", range.to)
       .order("id")

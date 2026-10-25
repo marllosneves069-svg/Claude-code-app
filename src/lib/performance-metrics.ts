@@ -77,15 +77,21 @@ export function buildFunnel(meta: MetaTotals, tiny: TinyTotals, taxRate: number)
   };
 }
 
+/** Orders counted as sales (compras, faturamento, produtos): every situação but cancelled. */
+export function isSale(group: TinySituacaoGroup): boolean {
+  return group !== "excluded";
+}
+
+/** "Em aberto" orders count both as sales and as open quotes. */
 export function sumTinyOrders(orders: { situacao_group: TinySituacaoGroup; valor: number }[]): TinyTotals {
   const totals: TinyTotals = { openOrders: 0, openValue: 0, purchases: 0, revenue: 0 };
   for (const o of orders) {
+    if (!isSale(o.situacao_group)) continue;
+    totals.purchases += 1;
+    totals.revenue += Number(o.valor);
     if (o.situacao_group === "open") {
       totals.openOrders += 1;
       totals.openValue += Number(o.valor);
-    } else if (o.situacao_group === "purchase") {
-      totals.purchases += 1;
-      totals.revenue += Number(o.valor);
     }
   }
   return totals;

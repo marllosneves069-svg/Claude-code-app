@@ -191,8 +191,8 @@ botão **Copiar relatório** gera o texto pronto para colar no WhatsApp.
 | Entraram em contato/form nativo | Conversas por mensagem iniciadas + leads de formulário instantâneo |
 | Investimento | Gasto do Meta, **sem imposto** |
 | Imposto | Gasto × taxa (12,15% padrão, editável em Configurações). Só informativo |
-| Orçamentos em aberto / valor parado | Pedidos do Tiny do período com situação "Em aberto" (situação atual) |
-| Compraram / faturamento | Pedidos com situação Aprovado, Preparando envio, Faturado, Pronto para envio, Enviado ou Entregue (cancelados ficam de fora), pela data do pedido |
+| Compraram / faturamento | **Todos** os pedidos do Tiny do período (Em aberto, Aprovado, Preparando envio, Faturado, Enviado, Entregue etc.), exceto Cancelado, pela data do pedido — bate com a aba "todos" de Pedidos de venda menos os cancelados |
+| Orçamentos em aberto / valor parado | Dos pedidos acima, os que estão com situação "Em aberto" (situação atual). Também contam como venda |
 | Custo por contato/orçamento/venda | Investimento ÷ quantidade |
 | Taxa de conversão | Compraram ÷ contatos |
 | ROAS | Faturamento do Tiny ÷ investimento |

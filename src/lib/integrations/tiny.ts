@@ -31,15 +31,10 @@ export function getTinyConfig(): TinyConfig | null {
 // ----------------------------------------------------------------------------
 // Situação → dashboard bucket
 // ----------------------------------------------------------------------------
+// Every order counts as a sale except cancelled ones. "Em aberto" is also a
+// sale, but gets its own bucket so the dashboard can show quotes still open.
 const OPEN_SITUACOES = new Set(["em aberto", "aberto"]);
-const PURCHASE_SITUACOES = new Set([
-  "aprovado",
-  "preparando envio",
-  "faturado",
-  "pronto para envio",
-  "enviado",
-  "entregue",
-]);
+const EXCLUDED_SITUACOES = new Set(["cancelado"]);
 
 export function normalizeSituacao(situacao: string | null | undefined): TinySituacaoGroup {
   const key = (situacao ?? "")
@@ -49,8 +44,8 @@ export function normalizeSituacao(situacao: string | null | undefined): TinySitu
     .trim()
     .toLowerCase();
   if (OPEN_SITUACOES.has(key)) return "open";
-  if (PURCHASE_SITUACOES.has(key)) return "purchase";
-  return "excluded";
+  if (EXCLUDED_SITUACOES.has(key)) return "excluded";
+  return "purchase";
 }
 
 // ----------------------------------------------------------------------------

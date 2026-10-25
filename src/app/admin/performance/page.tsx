@@ -107,7 +107,12 @@ export default async function PerformancePage({
                 value={formatBRL(funnel.costPerOpenOrder)}
                 {...delta(funnel.costPerOpenOrder, previous.costPerOpenOrder, "down")}
               />
-              <StatCard label="Compraram" value={formatInt(funnel.purchases)} {...delta(funnel.purchases, previous.purchases)} />
+              <StatCard
+                label="Compraram"
+                value={formatInt(funnel.purchases)}
+                {...delta(funnel.purchases, previous.purchases)}
+                helper="Todos os pedidos, exceto cancelados"
+              />
               <StatCard
                 label="Custo por venda"
                 value={formatBRL(funnel.costPerPurchase)}
@@ -141,8 +146,8 @@ export default async function PerformancePage({
               <FunnelBars
                 steps={[
                   { label: "Contatos", value: funnel.contacts },
-                  { label: "Orçamentos em aberto", value: funnel.openOrders },
                   { label: "Compraram", value: funnel.purchases },
+                  { label: "Ainda em aberto", value: funnel.openOrders },
                 ]}
               />
             </div>
@@ -153,7 +158,7 @@ export default async function PerformancePage({
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             <div className="card overflow-hidden lg:col-span-2">
               <h2 className="px-5 pt-5 text-base font-semibold">Produtos mais vendidos</h2>
-              <p className="px-5 pb-3 text-sm text-[var(--muted)]">Pedidos aprovados/faturados no período</p>
+              <p className="px-5 pb-3 text-sm text-[var(--muted)]">Todos os pedidos do período, exceto cancelados</p>
               <Table
                 head={["Produto", "Qtd.", "Faturamento", "Margem bruta", "Estoque"]}
                 rows={products.top.map((p) => [

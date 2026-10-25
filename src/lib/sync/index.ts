@@ -225,12 +225,12 @@ async function saveOrders(supabase: SupabaseClient, orders: TinyOrderSummary[]) 
   }
 }
 
-/** Items are only needed for sales (top products), so open/cancelled orders are skipped. */
+/** Items are only needed for sales (top products), so cancelled orders are skipped. */
 async function syncOrderItems(supabase: SupabaseClient, config: TinyConfig, checkDeadline: () => void) {
   const { data: pending } = await supabase
     .from("tiny_orders")
     .select("tiny_id")
-    .eq("situacao_group", "purchase")
+    .neq("situacao_group", "excluded")
     .is("items_synced_at", null)
     .order("data_pedido", { ascending: false })
     .limit(1000);
